@@ -332,55 +332,56 @@ func (e *functionEntry) resolveArgs(arguments []interface{}) ([]interface{}, err
 		}
 		for i, spec := range e.arguments {
 			userArg := arguments[i]
-			err := spec.typeCheck(userArg)
+			newArg, err := spec.typeCheck(userArg)
 			if err != nil {
 				return nil, err
 			}
+			arguments[i] = newArg
 		}
 		return arguments, nil
 	}
 	if len(arguments) < len(e.arguments) {
-		return nil, errors.New("invalid arity")
+		return nil, errors.New("Invalid arity.")
 	}
 	return arguments, nil
 }
 
-func (a *argSpec) typeCheck(arg interface{}) error {
+func (a *argSpec) typeCheck(arg interface{}) (interface{}, error) {
 	for _, t := range a.types {
 		switch t {
 		case jpNumber:
 			if _, ok := arg.(float64); ok {
-				return nil
+				return arg, nil
 			}
 		case jpString:
 			if _, ok := arg.(string); ok {
-				return nil
+				return arg, nil
 			}
 		case jpArray:
 			if isSliceType(arg) {
-				return nil
+				return arg, nil
 			}
 		case jpObject:
 			if _, ok := arg.(map[string]interface{}); ok {
-				return nil
+				return arg, nil
 			}
 		case jpArrayNumber:
-			if _, ok := toArrayNum(arg); ok {
-				return nil
+			if newArg, ok := toArrayNum(arg); ok {
+				return newArg, nil
 			}
 		case jpArrayString:
 			if _, ok := toArrayStr(arg); ok {
-				return nil
+				return arg, nil
 			}
 		case jpAny:
-			return nil
+			return arg, nil
 		case jpExpref:
 			if _, ok := arg.(expRef); ok {
-				return nil
+				return arg, nil
 			}
 		}
 	}
-	return fmt.Errorf("Invalid type for: %v, expected: %#v", arg, a.types)
+	return arg, fmt.Errorf("Invalid type for: %v, expected: %#v", arg, a.types)
 }
 
 func (f *functionCaller) CallFunction(name string, arguments []interface{}, intr *treeInterpreter) (interface{}, error) {
@@ -427,11 +428,11 @@ func jpfStartsWith(arguments []interface{}) (interface{}, error) {
 func jpfAvg(arguments []interface{}) (interface{}, error) {
 	// We've already type checked the value so we can safely use
 	// type assertions.
-	args := arguments[0].([]interface{})
+	args := arguments[0].([]float64)
 	length := float64(len(args))
 	numerator := 0.0
 	for _, n := range args {
-		numerator += n.(float64)
+		numerator += n
 	}
 	return numerator / length, nil
 }

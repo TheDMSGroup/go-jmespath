@@ -145,11 +145,16 @@ func toArrayNum(data interface{}) ([]float64, bool) {
 	if d, ok := data.([]interface{}); ok {
 		result := make([]float64, len(d))
 		for i, el := range d {
-			item, ok := el.(float64)
-			if !ok {
+			switch item := el.(type) {
+			case float64:
+				result[i] = item
+			case int64:
+				result[i] = float64(item)
+			case int:
+				result[i] = float64(item)
+			default:
 				return nil, false
 			}
-			result[i] = item
 		}
 		return result, true
 	}

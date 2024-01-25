@@ -811,6 +811,12 @@ func jpfToNumber(arguments []interface{}) (interface{}, error) {
 	if v, ok := arg.(float64); ok {
 		return v, nil
 	}
+	if v, ok := arg.(int64); ok {
+		return float64(v), nil
+	}
+	if v, ok := arg.(int); ok {
+		return float64(v), nil
+	}
 	if v, ok := arg.(string); ok {
 		conv, err := strconv.ParseFloat(v, 64)
 		if err != nil {

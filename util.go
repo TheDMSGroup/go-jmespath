@@ -141,6 +141,9 @@ func capSlice(length int, actual int, step int) int {
 // If any element in the array cannot be converted, then nil is returned
 // along with a second value of false.
 func toArrayNum(data interface{}) ([]float64, bool) {
+	if d, ok := data.([]float64); ok {
+		return d, true
+	}
 	// Is there a better way to do this with reflect?
 	if d, ok := data.([]interface{}); ok {
 		result := make([]float64, len(d))
